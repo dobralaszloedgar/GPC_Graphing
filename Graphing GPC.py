@@ -3,9 +3,9 @@ import matplotlib.font_manager
 import numpy as np
 
 # Initial variables
-txt_file = "G:/Edgar Dobra/GPC Samples/Fall 2024/11.15.2024_GB_GRAFT_PS-b-2PLA.txt"
+txt_file = "G:/Edgar Dobra/GPC Samples/Spring 2025/03.04.2025_GB-OT2_PS-b.txt"
 color_palette = 2
-RI_calibration = "G:/Edgar Dobra/GPC Samples/Calibration Curves/RI Calibration Curve 2024 September.txt"
+RI_calibration = "G:/Edgar Dobra/GPC Samples/Calibration Curves/RI Calibration Curve 2025 January.txt"
 x_lim = [1e3, 1e8]  # default set to [1e3, 1e8]
 y_lim = [-0.05, 1.2]  # default set to [-0.05, 1.2]
 normalize_peak_range = [1e4, 1e8]  # default set to [1e4, 1e8]
