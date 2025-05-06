@@ -1,19 +1,25 @@
+import os
+
 import matplotlib.pyplot as plt
 import matplotlib.font_manager
 import numpy as np
 
 # Initial variables
-txt_file = "G:/Edgar Dobra/GPC Samples/Spring 2025/03.04.2025_GB-OT2_PS-b.txt"
-color_palette = 2
-RI_calibration = "G:/Edgar Dobra/GPC Samples/Calibration Curves/RI Calibration Curve 2025 January.txt"
+txt_file = f"G:/Edgar Dobra/GPC Samples/2025 Spring/JBB Campaign 1/6_GT-GF_RI.txt"
+output_dir = r"G:/Edgar Dobra/Polymer GPC Graphs/2025 Spring/JBB Campaign 1"
+os.makedirs(output_dir, exist_ok=True)  # create folder if it doesn’t exist
+color_palette = 98
+RI_calibration = "G:/Edgar Dobra/GPC Samples/Calibration Curves/RI Calibration Curve 2025 April.txt"
 x_lim = [1e3, 1e8]  # default set to [1e3, 1e8]
-y_lim = [-0.05, 1.2]  # default set to [-0.05, 1.2]
-normalize_peak_range = [1e4, 1e8]  # default set to [1e4, 1e8]
+y_lim = [-0.05, 1.1]  # default set to [-0.05, 1.2]
+normalize_peak_range = [1e3, 1e4]  # default set to [1e4, 1e8]
 
+baseline_method = 'flat'  # can change to 'flat' (1 range), 'linear'(2 ranges), or 'quadratic' (3 ranges)
+baseline_ranges = [[1e7, 5e7]]  # MW ranges for baseline calculation
 
 matplotlib.rcParams['font.family'] = 'Avenir Next LT Pro'
 matplotlib.rcParams['font.size'] = 18
-plt.figure(figsize=(7, 5))
+plt.figure(figsize=(16, 8))
 plt.subplots_adjust(bottom=0.19)
 plt.subplots_adjust(left=0.19)
 
@@ -70,6 +76,12 @@ def color(number):
             return "#FF5F0F"
         elif number == 1:
             return "#0455A4"
+
+    elif color_palette == 98:
+        if number == 0:
+            return "#298c8c"
+        elif number == 1:
+            return "#f1a226"
 
     elif color_palette == 4:
         if number == 0:
@@ -193,28 +205,34 @@ def min_of_y_within_range(x_array, y_array):
     return np.min(y_array[mask])
 
 
+
+
 def get_data(index):
-    x_a = np.delete(data_array_RI[:, 1], [0, 1], 0)
-    x_a = x_a.astype(float)
-    x_a = 10**x_a
+    # load x (MW) and raw y for this trace
+    x_a = np.delete(data_array_RI[:, 1], [0, 1], 0).astype(float)
+    x_a = 10 ** x_a
     y_a = np.delete(data_array[:, index * 2 + 1], [0, 1], 0).astype(float)
 
-    min_y = min_of_y_within_range(x_a, y_a)
-    for value in range(len(y_a)):
-        y_a[value] = y_a[value] - min_y
 
+    # 2) subtract local minimum in the normalization window
+    min_y = min_of_y_within_range(x_a, y_a)
+    y_a = y_a - min_y
+
+    # 3) divide by local maximum in the peak window
     max_y = max_of_y_within_range(x_a, y_a)
-    for value in range(len(y_a)):
-        y_a[value] = y_a[value] / max_y
+    y_a = y_a / max_y
 
     return x_a, y_a
 
 
-for i in range(int(len(data_array[0, :])/2)):
-    x = get_data(i)[0]
-    y = get_data(i)[1]
-    plt.plot(x, y, color(i), label=data_array[0, 2*i])
+# your plotting setup …
+for i in range(int(data_array.shape[1] / 2)):
+    x, y = get_data(i)
+    plt.plot(x, y, color(i), label=data_array[0, 2 * i])
+    # optional: to see the fitted baseline itself, uncomment:
+    # plt.plot(x, baseline, '--', color(i), alpha=0.5)
 
+plt.xscale("log")
 
 plt.xscale("log")
 ax = plt.gca()
@@ -223,5 +241,5 @@ ax.set_ylim(y_lim)
 plt.xlabel("Molecular weight (g/mol)", fontsize=20, name='Avenir Next LT Pro', fontstyle='italic', fontweight='demi')
 plt.ylabel("Normalization", fontsize=20, name='Avenir Next LT Pro', fontstyle='italic', fontweight='demi')
 plt.legend()
-plt.savefig("Figure1.png", dpi=1200)
-plt.show()
+plt.savefig(os.path.join(output_dir, os.path.splitext(os.path.basename(txt_file))[0] + '.png'), dpi=300)
+#plt.show()
